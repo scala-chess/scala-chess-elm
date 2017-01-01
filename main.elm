@@ -56,7 +56,7 @@ update msg model =
                             in
                                 case maybeTarget of
                                     Just targetIndex ->
-                                        ( Selected selected index, [ Communication.execAction (Position.fro mIndex model.boardSize selected) targetIndex ] )
+                                        ( Selected selected index, [ Communication.execAction (Position.fromIndex model.boardSize selected) targetIndex ] )
 
                                     Nothing ->
                                         ( None, [] )

@@ -8,6 +8,7 @@ import Model exposing (Piece)
 import Action exposing (Action)
 import Model exposing (Model)
 import WebSocket
+import Position exposing (Position)
 
 
 type InMessage
@@ -26,14 +27,16 @@ handleMessage msg =
             Invalid <| Debug.log "Error" e
 
 
-queryActions pos =
+queryActionsCmd : Position -> Cmd msg
+queryActionsCmd pos =
     Encode.object
         [ ( "origin", Position.encode pos ) ]
         |> Encode.encode 0
         |> WebSocket.send "ws://localhost:9000/socket"
 
 
-execAction pos index =
+execActionCmd : Position -> Int -> Cmd msg
+execActionCmd pos index =
     Encode.object
         [ ( "position", Position.encode pos )
         , ( "index", Encode.int index )

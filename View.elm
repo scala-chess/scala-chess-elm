@@ -50,15 +50,19 @@ view model =
                 , selection = []
                 }
               )
-            , Html.node
-                "link"
-                [ Html.Attributes.rel "stylesheet"
-                , Html.Attributes.type_ "text/css"
-                , Html.Attributes.href "assets/stylesheets/elm.css"
-                ]
-                []
+            , stylesheet
             , winnerDiv model.winner
             ]
+
+
+stylesheet =
+    Html.node
+        "link"
+        [ Html.Attributes.rel "stylesheet"
+        , Html.Attributes.type_ "text/css"
+        , Html.Attributes.href "assets/stylesheets/elm.css"
+        ]
+        []
 
 
 winnerDiv maybeWinner =

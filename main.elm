@@ -75,7 +75,7 @@ fieldSelected index model =
         ( selection, cmds ) =
             case model.selection of
                 None ->
-                    ( AvailablePending index, [ Communication.queryActions <| Position.fromIndex model.boardSize index ] )
+                    ( AvailablePending index, [ Communication.queryActionsCmd <| Position.fromIndex model.boardSize index ] )
 
                 Available selected available ->
                     List.map .target available
@@ -83,7 +83,7 @@ fieldSelected index model =
                         |> List.filter (\t -> Position.toIndex model.boardSize (Tuple.second t) == index)
                         |> List.map Tuple.first
                         |> List.head
-                        |> Maybe.map (\i -> ( Selected selected index, [ Communication.execAction (Position.fromIndex model.boardSize selected) i ] ))
+                        |> Maybe.map (\i -> ( Selected selected index, [ Communication.execActionCmd (Position.fromIndex model.boardSize selected) i ] ))
                         |> Maybe.withDefault ( None, [] )
 
                 _ ->

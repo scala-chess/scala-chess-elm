@@ -14,6 +14,7 @@ type alias Size =
     Position
 
 
+fromIndex : Size -> Int -> Position
 fromIndex boardSize index =
     let
         x =
@@ -25,16 +26,19 @@ fromIndex boardSize index =
         { x = x, y = y }
 
 
+toIndex : Size -> Position -> Int
 toIndex boardSize pos =
     pos.x + pos.y * boardSize.x
 
 
+decoder : Decoder Position
 decoder =
     map2 Position
         (field "x" int)
         (field "y" int)
 
 
+encode : Position -> Encode.Value
 encode pos =
     Encode.object
         [ ( "x", Encode.int pos.x )

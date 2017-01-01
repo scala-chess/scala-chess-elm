@@ -2,6 +2,7 @@ module ComPiece exposing (..)
 
 import Json.Decode as Decode exposing (..)
 import Json.Encode as Encode
+import Model exposing (Piece)
 
 
 type alias ComPiece =
@@ -9,6 +10,10 @@ type alias ComPiece =
     , name : String
     , color : String
     }
+
+
+toModelPiece comPiece pos =
+    Piece comPiece.id pos (img comPiece)
 
 
 decoder =

@@ -8,6 +8,7 @@ type alias Model =
     { selection : Selection
     , pieces : List Piece
     , boardSize : Size
+    , winner : Maybe String
     }
 
 

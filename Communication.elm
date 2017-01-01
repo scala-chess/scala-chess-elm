@@ -1,6 +1,6 @@
 module Communication exposing (..)
 
-import Json.Decode exposing (decodeString, field, list, map2, string, nullable, oneOf, map)
+import Json.Decode exposing (decodeString, field, list, map2, string, nullable, oneOf, map, at, maybe)
 import Json.Encode as Encode
 import ComPiece
 import Position
@@ -11,37 +11,35 @@ import WebSocket
 
 
 type InMessage
-    = Update (List Piece)
+    = Update (List Piece) (Maybe String)
     | ValidActions (List Action)
     | Invalid String
 
 
 handleMessage : String -> InMessage
 handleMessage msg =
-    case decodeString inMessageDecoder msg of
+    case decodeString inMessageDecoder (Debug.log "JSON:" msg) of
         Ok inMessage ->
-            Debug.log "Message" inMessage
+            inMessage
 
         Err e ->
-            let
-                x =
-                    Debug.log "Error" e
-            in
-                Invalid e
+            Invalid <| Debug.log "Error" e
 
 
 queryActions pos =
-    WebSocket.send "ws://localhost:9000/socket"
-        (Encode.object [ ( "origin", Position.encode pos ) ]
-            |> Encode.encode 0
-        )
+    Encode.object
+        [ ( "origin", Position.encode pos ) ]
+        |> Encode.encode 0
+        |> WebSocket.send "ws://localhost:9000/socket"
 
 
 execAction pos index =
-    WebSocket.send "ws://localhost:9000/socket"
-        (Encode.object [ ( "position", Position.encode pos ), ( "index", Encode.int index ) ]
-            |> Encode.encode 0
-        )
+    Encode.object
+        [ ( "position", Position.encode pos )
+        , ( "index", Encode.int index )
+        ]
+        |> Encode.encode 0
+        |> WebSocket.send "ws://localhost:9000/socket"
 
 
 inMessageDecoder : Json.Decode.Decoder InMessage
@@ -51,8 +49,9 @@ inMessageDecoder =
 
 updateDecoder : Json.Decode.Decoder InMessage
 updateDecoder =
-    map Update
-        (field "pieces" (list posPieceDecoder))
+    map2 Update
+        (at [ "chessBoard", "pieces" ] (list posPieceDecoder))
+        (maybe (field "winner" string))
 
 
 validActionsDecoder : Json.Decode.Decoder InMessage
@@ -63,10 +62,6 @@ validActionsDecoder =
 
 posPieceDecoder : Json.Decode.Decoder Piece
 posPieceDecoder =
-    map2 modelPiece
+    map2 ComPiece.toModelPiece
         (field "piece" ComPiece.decoder)
         (field "pos" Position.decoder)
-
-
-modelPiece piece pos =
-    Piece piece.id pos (ComPiece.img piece)

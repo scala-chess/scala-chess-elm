@@ -7,6 +7,7 @@ import Model exposing (..)
 import Position exposing (Size)
 import Html.Keyed
 import Action exposing (Action)
+import Message exposing (..)
 
 
 type alias BoardModel a =
@@ -15,7 +16,7 @@ type alias BoardModel a =
     , selectedTarget : Int
     , targets : List Int
     , pieces : List Piece
-    , selection : List Action
+    , choices : List String
     , onClick : Int -> a
     }
 
@@ -25,7 +26,7 @@ type Side
     | Right
 
 
-draw : BoardModel msg -> Html msg
+draw : BoardModel Msg -> Html Msg
 draw model =
     div
         [ style
@@ -55,7 +56,7 @@ draw model =
                             []
                         )
                             ++ (if i == model.selected then
-                                    [ ( "selection", selectionDiv model.selection Right ) ]
+                                    [ ( "selection", selectionDiv model.choices Right ) ]
                                 else
                                     []
                                )
@@ -167,12 +168,13 @@ pieceDiv piece =
             ]
 
 
-selectionDiv : List Action -> Side -> Html msg
+selectionDiv : List String -> Side -> Html Msg
 selectionDiv items side =
     let
         show =
-            (List.length items) > 1
+            True
 
+        -- (List.length items) > 1
         width =
             case show of
                 True ->
@@ -202,22 +204,14 @@ selectionDiv items side =
                 , ( "box-shadow", "rgba(117, 117, 117, 0.7) 16px 16px" )
                 ]
             ]
-            (List.map mapActionToSelection items
+            (List.map mapChoiceToImgURL items
                 |> List.map selectionImage
             )
 
 
-mapActionToSelection : Action -> String
-mapActionToSelection action =
-    case action.name of
-        "Move" ->
-            "move.png"
-
-        "Castle" ->
-            "castle.png"
-
-        _ ->
-            "unknownAction.png"
+mapChoiceToImgURL : String -> ( String, String )
+mapChoiceToImgURL choice =
+    ( choice, "assets/pieces/" ++ "Black_" ++ choice ++ ".png" )
 
 
 
@@ -226,7 +220,7 @@ mapActionToSelection action =
 
 selectionImage selectionItem =
     img
-        [ src selectionItem
+        [ src (Tuple.second selectionItem)
         , style
             [ ( "height", "100%" )
             , ( "width", "auto" )
@@ -234,5 +228,6 @@ selectionImage selectionItem =
             , ( "max-height", "100%" )
             ]
         , class "selection"
+        , onClick (SelectChoice (Tuple.first selectionItem))
         ]
         []

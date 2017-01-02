@@ -11,6 +11,7 @@ import Time exposing (second)
 import Model exposing (..)
 import Message exposing (..)
 import View exposing (view)
+import Action exposing (Action)
 
 
 main : Program Never Model Msg
@@ -34,6 +35,9 @@ update msg model =
         SelectField index ->
             whenNotWon (fieldSelected index) model
 
+        SelectChoice choice ->
+            choiceSelected choice model
+
         WebSocketReceive data ->
             webSocketReceived data model
 
@@ -49,6 +53,20 @@ whenNotWon f model =
 
         Nothing ->
             f model
+
+
+choiceSelected : String -> Model -> ( Model, Cmd Msg )
+choiceSelected choice model =
+    case model.selection of
+        SelectedNeedChoice selected index available ->
+            List.filter (\( index, action ) -> (Maybe.withDefault "" action.choice) == choice) available
+                |> List.map Tuple.first
+                |> List.head
+                |> Maybe.map (\i -> { model | selection = Selected selected index } ! [ Communication.execActionCmd (Position.fromIndex model.boardSize selected) i ])
+                |> Maybe.withDefault ({ model | selection = None } ! [])
+
+        _ ->
+            { model | selection = None } ! []
 
 
 webSocketReceived : String -> Model -> ( Model, Cmd Msg )
@@ -78,13 +96,19 @@ fieldSelected index model =
                     ( AvailablePending index, [ Communication.queryActionsCmd <| Position.fromIndex model.boardSize index ] )
 
                 Available selected available ->
-                    List.map .target available
-                        |> List.indexedMap (,)
-                        |> List.filter (\t -> Position.toIndex model.boardSize (Tuple.second t) == index)
-                        |> List.map Tuple.first
-                        |> List.head
-                        |> Maybe.map (\i -> ( Selected selected index, [ Communication.execActionCmd (Position.fromIndex model.boardSize selected) i ] ))
-                        |> Maybe.withDefault ( None, [] )
+                    let
+                        indexedActions =
+                            List.indexedMap (,) available
+                                |> List.filter (\t -> Position.toIndex model.boardSize (Tuple.second t).target == index)
+                    in
+                        if (List.length indexedActions) > 1 then
+                            ( SelectedNeedChoice selected index indexedActions, [] )
+                        else
+                            indexedActions
+                                |> List.map Tuple.first
+                                |> List.head
+                                |> Maybe.map (\i -> ( Selected selected index, [ Communication.execActionCmd (Position.fromIndex model.boardSize selected) i ] ))
+                                |> Maybe.withDefault ( None, [] )
 
                 _ ->
                     ( model.selection, [] )

@@ -16,6 +16,7 @@ type Selection
     = None
     | AvailablePending Int
     | Available Int (List Action)
+    | SelectedNeedChoice Int Int (List ( Int, Action ))
     | Selected Int Int
 
 

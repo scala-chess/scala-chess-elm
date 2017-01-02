@@ -23,10 +23,10 @@ view model =
         selection =
             case model.selection of
                 None ->
-                    { selected = -1, targets = [], selectedTarget = -1 }
+                    { selected = -1, targets = [], selectedTarget = -1, choices = [] }
 
                 AvailablePending selected ->
-                    { selected = selected, targets = [], selectedTarget = -1 }
+                    { selected = selected, targets = [], selectedTarget = -1, choices = [] }
 
                 Available selected targets ->
                     let
@@ -34,10 +34,18 @@ view model =
                             List.map .target targets
                                 |> List.map (Position.toIndex model.boardSize)
                     in
-                        { selected = selected, targets = targetIndices, selectedTarget = -1 }
+                        { selected = selected, targets = targetIndices, selectedTarget = -1, choices = [] }
+
+                SelectedNeedChoice index selected available ->
+                    let
+                        choices =
+                            List.map Tuple.second available
+                                |> List.filterMap .choice
+                    in
+                        { selected = selected, targets = [], selectedTarget = selected, choices = choices }
 
                 Selected selected selectedTarget ->
-                    { selected = selected, targets = [], selectedTarget = selectedTarget }
+                    { selected = selected, targets = [], selectedTarget = selectedTarget, choices = [] }
     in
         div [ flexCenter, style [ ( "width", "100%" ), ( "height", "100%" ), ( "background", "#BDBDBD" ) ] ]
             [ (BoardView.draw
@@ -47,7 +55,7 @@ view model =
                 , targets = selection.targets
                 , pieces = model.pieces
                 , onClick = SelectField
-                , selection = []
+                , choices = selection.choices
                 }
               )
             , stylesheet

@@ -6,7 +6,6 @@ import Html.Attributes exposing (style, src, class)
 import Model exposing (..)
 import Position exposing (Size)
 import Html.Keyed
-import Action exposing (Action)
 import Message exposing (..)
 
 

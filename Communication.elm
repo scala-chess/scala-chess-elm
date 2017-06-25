@@ -1,6 +1,6 @@
 module Communication exposing (..)
 
-import Json.Decode exposing (decodeString, field, list, map2, string, nullable, oneOf, map, at, maybe)
+import Json.Decode exposing (decodeString, field, list, map2, map4, string, nullable, oneOf, map, at, maybe, int)
 import Json.Encode as Encode
 import ComPiece
 import Position
@@ -12,7 +12,7 @@ import Position exposing (Position)
 
 
 type InMessage
-    = Update (List Piece) (Maybe String)
+    = Update (List Piece) (Maybe String) Int Int
     | ValidActions (List Action)
     | Invalid String
 
@@ -52,9 +52,11 @@ inMessageDecoder =
 
 updateDecoder : Json.Decode.Decoder InMessage
 updateDecoder =
-    map2 Update
+    map4 Update
         (at [ "chessBoard", "pieces" ] (list posPieceDecoder))
         (maybe (field "winner" string))
+        (at [ "chessBoard", "dimX" ] int)
+        (at [ "chessBoard", "dimY" ] int)
 
 
 validActionsDecoder : Json.Decode.Decoder InMessage

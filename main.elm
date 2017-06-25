@@ -11,7 +11,6 @@ import Time exposing (second)
 import Model exposing (..)
 import Message exposing (..)
 import View exposing (view)
-import Action exposing (Action)
 
 
 main : Program Never Model Msg
@@ -72,8 +71,8 @@ choiceSelected choice model =
 webSocketReceived : String -> Model -> ( Model, Cmd Msg )
 webSocketReceived data model =
     case (Communication.handleMessage data) of
-        Update pieces winner ->
-            { model | pieces = pieces, winner = winner } ! [ Task.perform (\_ -> ActionDone) (Process.sleep (1 * second)) ]
+        Update pieces winner x y ->
+            { model | pieces = pieces, winner = winner, boardSize = { x = x, y = y } } ! [ Task.perform (\_ -> ActionDone) (Process.sleep (1 * second)) ]
 
         ValidActions validActions ->
             case model.selection of
